@@ -39,13 +39,10 @@ def fetch_bridge_status():
         for idx, table in enumerate(bridge_tables, 1):
             bridge_name = table.find('span', {'class': 'lgtextblack'}).text.strip()
             status = table.find('span', {'id': 'status'}).text.strip()
-            colour_img = table.find('img')['src']
-            colour = colour_img.split('/')[-1].split('.')[0]  # Extract colour from image name
 
             updated_status.append({
                 'id': idx,'location': bridge_name,
                 'status': status,
-                'colour': colour,
                 'last_updated': datetime.now().isoformat()
             })
 
