@@ -19,68 +19,69 @@ This project is a simple API that scrapes a public bridge status website and pro
 
 ### 1. Clone the repository
 
-\`\`\`sh
+```sh
 git clone https://github.com/yourusername/bridge-status-api.git
 cd bridge-status-api
-\`\`\`
+```
 
 ### 2. Create a virtual environment and activate it
 
-\`\`\`sh
+```sh
 python -m venv venv
-source venv/bin/activate # On Windows, use \`venv\Scripts\activate\`
-\`\`\`
+source venv/bin/activate # On Windows, use `venv\Scripts\activate`
+```
 
 ### 3. Install dependencies
 
-\`\`\`sh
+```sh
 pip install -r requirements.txt
-\`\`\`
+```
 
 ### 4. Set environment variables
 
-Create a \`.env\` file in the project root and add the following:
+Create a `.env` file in the project root and add the following:
 
-\`\`\`dotenv
+```dotenv
 BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
 FETCH_INTERVAL=30
 API_KEY=your_secret_api_key_here
-\`\`\`
+```
 
 ### 5. Run the application
 
-\`\`\`sh
+```sh
 python app.py
-\`\`\`
+```
 
 ## Docker Setup
 
 ### 1. Build the Docker image
 
-\`\`\`sh
+```sh
 docker build -t bridge-status-api .
-\`\`\`
+```
 
 ### 2. Run the Docker container
 
-\`\`\`sh
+```sh
 docker run -d -p 5000:5000 --env-file .env bridge-status-api
-\`\`\`
+```
 
 ## API Endpoints
 
 ### Get Bridge Status
 
-\`\`\`http
+```http
 GET /bridge-status
-\`\`\`
+```
 
 Headers:
 
--   \`X-API-Key\`: Your API key
+-   `X-API-Key`: Your API key
 
 Response:
-\`\`\`json
+
+```json
 {
 "bridges": [
 {
@@ -93,20 +94,21 @@ Response:
 ...
 ]
 }
-\`\`\`
+```
 
 ### Health Check
 
-\`\`\`http
+```http
 GET /health
-\`\`\`
+```
 
 Response:
-\`\`\`json
+
+```json
 {
-"status": "healthy"
+	"status": "healthy"
 }
-\`\`\`
+```
 
 ## License
 
