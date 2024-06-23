@@ -39,8 +39,8 @@ def test_basic_status(mock_requests_get, mock_datetime):
             mock_requests_get.return_value.text = create_mock_html(status)
             fetch_bridge_status()
             result = get_current_bridge_status()
-            assert result['bridges'][0]['current_status'] == expected_current
-            assert result['bridges'][0]['action_status'] == expected_action
+            assert result['bridges'][0]['status'] == expected_current
+            assert result['bridges'][0]['action'] == expected_action
 
 def test_custom_status(mock_requests_get, mock_datetime):
     test_cases = [
@@ -54,17 +54,17 @@ def test_custom_status(mock_requests_get, mock_datetime):
             mock_requests_get.return_value.text = create_mock_html(status)
             fetch_bridge_status()
             result = get_current_bridge_status()
-            assert result['bridges'][0]['current_status'] == expected_current
-            assert result['bridges'][0]['action_status'] == expected_action
+            assert result['bridges'][0]['status'] == expected_current
+            assert result['bridges'][0]['action'] == expected_action
             if "since 12:12" in status:
-                assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T12:12:00')
+                assert result['bridges'][0]['updated'].startswith('2024-06-22T12:12:00')
 
 def test_new_bridge(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
         mock_requests_get.return_value.text = create_mock_html("Available")
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T17:05:00')
+        assert result['bridges'][0]['updated'].startswith('2024-06-22T17:05:00')
 
 def test_status_change(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
@@ -76,7 +76,7 @@ def test_status_change(mock_requests_get, mock_datetime):
         mock_requests_get.return_value.text = create_mock_html("Unavailable")
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T17:15:00')
+        assert result['bridges'][0]['updated'].startswith('2024-06-22T17:15:00')
 
 def test_no_status_change(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
@@ -89,14 +89,14 @@ def test_no_status_change(mock_requests_get, mock_datetime):
         mock_requests_get.return_value.text = create_mock_html("Unavailable (Fully Raised since 17:11)")
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['bridge_last_updated'] == initial_result['bridges'][0]['bridge_last_updated']
+        assert result['bridges'][0]['updated'] == initial_result['bridges'][0]['updated']
 
     action_change_time = new_time + timedelta(minutes=10)
     with patch('bridge_status.get_current_time', return_value=action_change_time):
         mock_requests_get.return_value.text = create_mock_html("Unavailable (Lowering)")
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T17:25:00')
+        assert result['bridges'][0]['updated'].startswith('2024-06-22T17:25:00')
 
 def test_multiple_updates(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
@@ -108,7 +108,7 @@ def test_multiple_updates(mock_requests_get, mock_datetime):
         mock_requests_get.return_value.text = create_mock_html("Unavailable (Fully Raised since 18:00)")
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T18:00:00')
+        assert result['bridges'][0]['updated'].startswith('2024-06-22T18:00:00')
 
 def test_empty_html_response(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
@@ -144,9 +144,9 @@ def test_status_without_time(mock_requests_get, mock_datetime):
         mock_requests_get.return_value.text = create_mock_html(status)
         fetch_bridge_status()
         result = get_current_bridge_status()
-        assert result['bridges'][0]['current_status'] == "Unavailable"
-        assert result['bridges'][0]['action_status'] is None
-        assert result['bridges'][0]['bridge_last_updated'].startswith('2024-06-22T17:05:00')
+        assert result['bridges'][0]['status'] == "Unavailable"
+        assert result['bridges'][0]['action'] is None
+        assert result['bridges'][0]['updated'].startswith('2024-06-22T17:05:00')
 
 def test_simultaneous_updates(mock_requests_get, mock_datetime):
     with patch('bridge_status.get_current_time', return_value=mock_datetime):
@@ -164,5 +164,5 @@ def test_simultaneous_updates(mock_requests_get, mock_datetime):
         fetch_bridge_status()
 
     result = get_current_bridge_status()
-    assert result['bridges'][0]['current_status'] == "Available"
-    assert result['bridges'][0]['bridge_last_updated'].startswith(another_time.isoformat())
+    assert result['bridges'][0]['status'] == "Available"
+    assert result['bridges'][0]['updated'].startswith(another_time.isoformat())

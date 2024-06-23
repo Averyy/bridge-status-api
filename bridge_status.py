@@ -57,14 +57,14 @@ def fetch_bridge_status():
             bridge_data_entry = {
                 'id': idx,
                 'location': bridge_name,
-                'current_status': current_status,
-                'action_status': action_status,
-                'bridge_last_updated': bridge_last_updated_iso
+                'status': current_status,
+                'action': action_status,
+                'updated': bridge_last_updated_iso
             }
             updated_status.append(bridge_data_entry)
 
         bridge_status = {
-            'last_updated': last_updated.isoformat(),
+            'updated': last_updated.isoformat(),
             'bridges': updated_status
         }
     except Exception as e:
