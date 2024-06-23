@@ -1,6 +1,22 @@
 # 🔼🚢⬇️ St. Catharines / Thorold Bridge Status API
 
-This project is a simple API that scrapes Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption that you can self host. It is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
+[![Docker Build](https://img.shields.io/docker/build/yourusername/bridge-status-api)](https://hub.docker.com/r/yourusername/bridge-status-api)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A simple API that scrapes the Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption. This self-hosted solution is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
+
+## Table of Contents
+
+-   [Features](#features)
+-   [Prerequisites](#prerequisites)
+-   [Setup](#setup)
+-   [Docker Setup](#docker-setup)
+-   [API Endpoints](#api-endpoints)
+-   [Configuration](#configuration)
+-   [Contributing](#contributing)
+-   [Testing](#testing)
+-   [Troubleshooting](#troubleshooting)
+-   [License](#license)
 
 ## Features
 
@@ -37,9 +53,9 @@ source venv/bin/activate # On Windows, use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
-### 4. Set environment variables
+### 4. Set environment variables (optional)
 
-Create a `.env` file in the project root and add the following:
+Create a `.env` file in the project root and add the below. Note these are preset but I highly recommend changing the API_KEY to something different. It's only been tested with the St Catharine's bridges and will probably need changes to work with the others:
 
 ```dotenv
 BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
@@ -117,6 +133,22 @@ Response:
 {
 	"status": "healthy"
 }
+```
+
+## Testing
+
+This project includes unit tests to ensure the reliability of the API.
+
+### Running Tests
+
+To run the tests, follow these steps:
+
+1. Ensure you're in the project directory and your virtual environment is activated.
+
+2. Run the tests using pytest:
+
+```sh
+pytest test_bridge_status.py
 ```
 
 ## License

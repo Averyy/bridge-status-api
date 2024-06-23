@@ -4,17 +4,20 @@ FROM python:3.9-slim
 # Set the working directory to /app
 WORKDIR /app
 
-# Install build dependencies
+# Copy just the requirements file first to leverage Docker cache
+COPY requirements.txt .
+
+# Install build dependencies and Python packages
 RUN apt-get update && \
-    apt-get install -y build-essential && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y build-essential && \
+    apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
+# Copy the rest of the application
 COPY . .
-
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Set environment variables
 ENV BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
