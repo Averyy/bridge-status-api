@@ -49,8 +49,16 @@ API_KEY=your_secret_api_key_here
 
 ### 5. Run the application
 
+For local/testing use:
+
 ```sh
 python app.py
+```
+
+For production / in the docker use:
+
+```sh
+python start_waitress.py
 ```
 
 ## Docker Setup
@@ -83,16 +91,17 @@ Response:
 
 ```json
 {
-"bridges": [
-{
-"id": 1,
-"location": "Bridge Name",
-"status": "Open/Closed",
-"colour": "green/red",
-"last_updated": "2023-06-22T15:03:01.012345"
-},
-...
-]
+    "bridges": [
+        {
+            "id": 1,
+            "location": "Bridge Name",
+            "current_status": "Available/Unavailable",
+            "action_status": "Raising/Lowering/etc.",
+            "bridge_last_updated": "2023-06-22T15:03:01.012345"
+        },
+        ...
+    ],
+    "last_updated": "2023-06-22T15:03:01.012345"
 }
 ```
 

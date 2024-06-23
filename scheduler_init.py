@@ -6,7 +6,7 @@ scheduler = BackgroundScheduler()
 
 def start_scheduler():
     if not scheduler.running:
-        scheduler.add_job(fetch_bridge_status, 'interval', seconds=FETCH_INTERVAL)
+        scheduler.add_job(fetch_bridge_status, 'interval', seconds=FETCH_INTERVAL, misfire_grace_time=60)
         scheduler.start()
         fetch_bridge_status()
 
