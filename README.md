@@ -3,7 +3,9 @@
 [![Docker Image](https://img.shields.io/docker/v/averyyyy/bridge-status-api?style=flat-square&logo=docker)](https://hub.docker.com/r/averyyyy/bridge-status-api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A simple API that scrapes the Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption. This self-hosted solution is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
+A simple API that scrapes the Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption. If they update the layout of their bridge status website it will cause this to break, but as of June 2024 the new update has been coming soon for ~2 years.
+
+This self-hosted solution is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment. You'll need to setup your own reverse proxy.
 
 ## Table of Contents
 
@@ -15,15 +17,15 @@ A simple API that scrapes the Great Lakes St. Lawrence Seaway bridge status webs
 -   [Configuration](#configuration)
 -   [Contributing](#contributing)
 -   [Testing](#testing)
--   [Troubleshooting](#troubleshooting)
 -   [License](#license)
 
 ## Features
 
--   Scrapes bridge status information from a public website
+-   Scrapes bridge status information from the public website
 -   Provides a REST API endpoint to retrieve the bridge status
 -   Secured with an API key
 -   Health check endpoint
+-   Unit tests
 
 ## Prerequisites
 
@@ -55,7 +57,7 @@ pip install -r requirements.txt
 
 ### 4. Set environment variables (optional)
 
-Create a `.env` file in the project root and add the below. Note these are preset but I highly recommend changing the API_KEY to something different. It's only been tested with the St Catharine's bridges and will probably need changes to work with the others:
+Create a `.env` file in the project root and add the below. Note these are defaulted but I highly recommend changing the API_KEY. It's only been tested with the St Catharine's bridges and will probably need changes to work with the others:
 
 ```dotenv
 BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
@@ -71,13 +73,21 @@ For local/testing use:
 python app.py
 ```
 
-For production / in the docker use:
+For production (Docker uses start_waitpress.py):
 
 ```sh
 python start_waitress.py
 ```
 
+Then in terminal you can test it with:
+
+```sh
+curl -H "X-API-Key: your_secret_api_key_here" http://localhost:5000/bridge-status
+```
+
 ## Docker Setup
+
+You can either build the Docker image yourself below, or download it from Docker Hub by clicking [here](https://hub.docker.com/r/averyyyy/bridge-status-api). The image is updated via a Github Workflow every time a commit it made.
 
 ### 1. Build the Docker image
 
