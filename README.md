@@ -1,6 +1,6 @@
-# Bridge Status API
+# St. Catharines / Thorold Bridge Status API
 
-This project is a simple API that scrapes a public bridge status website and provides that information for consumption that you can self host. It is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
+This project is a simple API that scrapes Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption that you can self host. It is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
 
 ## Features
 

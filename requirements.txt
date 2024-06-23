@@ -2,3 +2,6 @@ Flask
 requests
 beautifulsoup4
 apscheduler
+pytest
+python-dotenv
+waitress
