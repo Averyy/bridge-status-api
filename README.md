@@ -1,6 +1,6 @@
 # 🔼🚢⬇️ St. Catharines / Thorold Bridge Status API
 
-[![Docker Build](https://img.shields.io/docker/build/yourusername/bridge-status-api)](https://hub.docker.com/r/yourusername/bridge-status-api)
+[![Docker Image](https://img.shields.io/docker/v/averyyyy/bridge-status-api?style=flat-square&logo=docker)](https://hub.docker.com/r/averyyyy/bridge-status-api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A simple API that scrapes the Great Lakes St. Lawrence Seaway bridge status website and provides that information for consumption. This self-hosted solution is built using Flask, BeautifulSoup, and APScheduler, and is containerized using Docker for ease of deployment.
