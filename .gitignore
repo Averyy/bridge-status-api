@@ -34,3 +34,6 @@ coverage.xml
 
 # VS Code
 .vscode/
+
+# Don't check in the json storage
+bridge_stats.json

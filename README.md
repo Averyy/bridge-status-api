@@ -120,14 +120,55 @@ Response:
     "bridges": [
         {
             "id": 1,
-            "location": "Bridge Name",
-            "current_status": "Available/Unavailable",
-            "action_status": "Raising/Lowering/etc.",
-            "bridge_last_updated": "2023-06-22T15:03:01.012345"
+            "info": "Opened 7:24pm",
+            "location": "Lakeshore Rd",
+            "state": "OPEN NOW"
         },
         ...
     ],
     "last_updated": "2023-06-22T15:03:01.012345"
+}
+```
+
+### Get Bridge Statistics
+
+```http
+GET /bridge-stats
+```
+
+Headers:
+
+-   `X-API-Key`: Your API key
+
+Response:
+
+```json
+{
+    "bridge_statistics_": [
+        {
+            "avg_closure_duration": 0,
+            "avg_lowering_soon_to_available": 0,
+            "avg_raising_soon_to_unavailable": 0,
+            "avg_time_between_closures": 0,
+            "closure_durations": {
+                "1-9m": 0,
+                "10-15m": 0,
+                "16-20m": 0,
+                "21-25m": 0,
+                "26-30m": 0,
+                "31m+": 0
+            },
+            "id": 1,
+            "last_action": null,
+            "last_status": "Available",
+            "last_status_change": "2024-06-24T19:24:18.758574-04:00",
+            "location": "Lakeshore Rd",
+            "longest_closure": 0,
+            "shortest_closure": 0,
+            "stats_last_updated": "2024-06-24T19:49:26.234387-04:00"
+        },
+        ...
+    ]
 }
 ```
 
