@@ -55,6 +55,17 @@ class BridgeStats:
         self.save_stats()
 
     def update_status(self, bridge_stat, status, action, timestamp):
+        # Close out any open raising_soon or lowering_soon periods
+        if bridge_stat["raising_soon_times"] and "end" not in bridge_stat["raising_soon_times"][-1]:
+            if action != "Raising Soon":
+                bridge_stat["raising_soon_times"][-1]["end"] = timestamp.isoformat()
+                self.update_raising_soon_stats(bridge_stat, bridge_stat["raising_soon_times"][-1])
+
+        if bridge_stat["lowering_soon_times"] and "end" not in bridge_stat["lowering_soon_times"][-1]:
+            if action != "Lowering Soon":
+                bridge_stat["lowering_soon_times"][-1]["end"] = timestamp.isoformat()
+                self.update_lowering_soon_stats(bridge_stat, bridge_stat["lowering_soon_times"][-1])
+
         if status != bridge_stat["last_status"] or action != bridge_stat.get("last_action"):
             if status == "Unavailable" and bridge_stat["last_status"] == "Available":
                 bridge_stat["closures"].append({"start": timestamp.isoformat()})
@@ -65,16 +76,8 @@ class BridgeStats:
             
             if action == "Raising Soon":
                 bridge_stat["raising_soon_times"].append({"start": timestamp.isoformat()})
-            elif action == "Fully Raised" and bridge_stat.get("last_action") == "Raising Soon":
-                if bridge_stat["raising_soon_times"] and "end" not in bridge_stat["raising_soon_times"][-1]:
-                    bridge_stat["raising_soon_times"][-1]["end"] = timestamp.isoformat()
-                    self.update_raising_soon_stats(bridge_stat, bridge_stat["raising_soon_times"][-1])
             elif action == "Lowering Soon":
                 bridge_stat["lowering_soon_times"].append({"start": timestamp.isoformat()})
-            elif status == "Available" and bridge_stat.get("last_action") == "Lowering Soon":
-                if bridge_stat["lowering_soon_times"] and "end" not in bridge_stat["lowering_soon_times"][-1]:
-                    bridge_stat["lowering_soon_times"][-1]["end"] = timestamp.isoformat()
-                    self.update_lowering_soon_stats(bridge_stat, bridge_stat["lowering_soon_times"][-1])
             
             bridge_stat["last_status"] = status
             bridge_stat["last_action"] = action

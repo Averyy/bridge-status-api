@@ -37,3 +37,6 @@ coverage.xml
 
 # Don't check in the json storage
 bridge_stats.json
+
+# Remove macOS things
+.DS_Store
