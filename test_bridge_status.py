@@ -8,7 +8,6 @@ def base_time_and_stat():
     base_stat = {
         "last_status_change": (current_time - timedelta(minutes=35)).isoformat(),
         "avg_raising_soon_to_unavailable": 15,
-        "avg_lowering_soon_to_available": 15,
         "avg_closure_duration": 30,
         "closures": [{"start": (current_time - timedelta(minutes=49)).isoformat()}]
     }
@@ -39,12 +38,6 @@ def test_unavailable_fully_raised(base_time_and_stat):
     assert status == "CLOSED NOW"
     assert info == "Closed 5:11pm, fully raised since 5:15pm"
 
-def test_unavailable_lowering_soon(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    status, info = format_display_data("Unavailable", "Lowering Soon", current_time, base_stat)
-    assert status == "OPEN SOON"
-    assert info == "Opening in 1m"
-
 def test_unavailable_lowering(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info = format_display_data("Unavailable", "Lowering", current_time, base_stat)
@@ -56,13 +49,6 @@ def test_unavailable_raising(base_time_and_stat):
     status, info = format_display_data("Unavailable", "Raising", current_time, base_stat)
     assert status == "CLOSING..."
     assert info == "Closed 5:25pm"
-
-def test_unavailable_unknown_action(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    status, info = format_display_data("Unavailable", "Construction", current_time, base_stat)
-    assert status == "CLOSED NOW"
-    assert info.startswith("Closed 5:11pm")
-    assert "Construction" in info
 
 def test_temporarily_unavailable(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
@@ -93,10 +79,23 @@ def test_overnight_closure(base_time_and_stat):
     assert status == "CLOSED NOW"
     assert info.startswith("Closed 10:30pm")
     assert "opens 2:30am in 60m" in info
-    
+
 def test_unavailable_unknown_action(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
-    status, info = format_display_data("Unavailable", "Construction", current_time, base_stat)
+    status, info = format_display_data("Unavailable", "Unknown Action", current_time, base_stat)
     assert status == "CLOSED NOW"
     assert info.startswith("Closed 5:11pm")
-    assert "Construction" in info
+    assert "opening soon" in info  # Check for the standard unavailable message
+    assert "Unknown Action" not in info  # The action status should not be appended for known statuses
+
+def test_unknown_status_with_action(base_time_and_stat):
+    current_time, base_stat = base_time_and_stat
+    status, info = format_display_data("UnknownStatus", "SomeAction", current_time, base_stat)
+    assert status == "UNKNOWN"
+    assert info == "UnknownStatus (SomeAction)"
+
+def test_unknown_status_without_action(base_time_and_stat):
+    current_time, base_stat = base_time_and_stat
+    status, info = format_display_data("UnknownStatus", None, current_time, base_stat)
+    assert status == "UNKNOWN"
+    assert info == "UnknownStatus"

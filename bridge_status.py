@@ -40,15 +40,6 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
         elif action_status == "Lowering":
             display_status = "OPENING..."
             display_details = "Opening right now..."
-        elif action_status == "Lowering Soon":
-            display_status = "OPEN SOON"
-            avg_lowering_time = bridge_stat.get("avg_lowering_soon_to_available", 0)
-            if avg_lowering_time:
-                time_since_change = (current_time - last_status_change).total_seconds() / 60
-                remaining_time = max(1, int(avg_lowering_time - time_since_change))
-                display_details = f"Opening in {remaining_time}m"
-            else:
-                display_details = "Opening soon"
         elif action_status and "Fully Raised since" in action_status:
             display_status = "CLOSED NOW"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
@@ -67,9 +58,7 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
                     display_details = f"Closed {format_time(closure_start)}, opening soon"
             else:
                 display_details = f"Closed {format_time(closure_start)}"
-            
-            if action_status:
-                display_details += f" ({action_status})"
+
     else:
         # Handle unknown or new statuses
         if "Available" in current_status:
@@ -93,7 +82,6 @@ def fetch_bridge_status():
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         bridge_tables = soup.find_all('table', {'id': 'grey_box'})
-        logger.info(f"Found {len(bridge_tables)} bridge tables")
         
         last_updated = get_current_time()
         updated_status = []
@@ -102,9 +90,10 @@ def fetch_bridge_status():
             try:
                 bridge_name = table.find('span', {'class': 'lgtextblack'}).text.strip()
                 status = table.find('span', {'id': 'status'}).text.strip()
-                logger.info(f"Bridge {idx} name: {bridge_name}, status: {status}")
                 
+                logger.info(f"Raw Bridge {idx}: {bridge_name}, status: {status}")
                 current_status, action_status = parse_status(status)
+                logger.info(f"Parsed Bridge {idx}: {bridge_name}, current_status='{current_status}', action_status='{action_status}'")
                 
                 bridge_data = bridge_stats.get_bridge_stat(idx)
                 if not bridge_data:

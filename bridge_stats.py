@@ -26,19 +26,17 @@ class BridgeStats:
         return {
             "id": bridge_id,
             "location": bridge_name,
-            "stats_last_updated": timestamp.isoformat(),
-            "avg_closure_duration": 0,
+            "last_status": status,
+            "last_action": None,
             "shortest_closure": 0,
             "longest_closure": 0,
-            "avg_time_between_closures": 0,
+            "avg_closure_duration": 0,
             "avg_raising_soon_to_unavailable": 0,
-            "avg_lowering_soon_to_available": 0,
-            "last_status": status,
-            "last_status_change": timestamp.isoformat(),
+            "closure_durations": {"1-9m": 0, "10-15m": 0, "16-20m": 0, "21-25m": 0, "26-30m": 0, "31m+": 0},
             "closures": [],
             "raising_soon_times": [],
-            "lowering_soon_times": [],
-            "closure_durations": {"1-9m": 0, "10-15m": 0, "16-20m": 0, "21-25m": 0, "26-30m": 0, "31m+": 0}
+            "last_status_change": timestamp.isoformat(),
+            "stats_last_updated": timestamp.isoformat()
         }
 
     def update_bridge_stat(self, bridge_id, bridge_name, status, action, timestamp):
@@ -49,22 +47,16 @@ class BridgeStats:
         
         self.update_status(bridge_stat, status, action, timestamp)
         self.cleanup_old_data(bridge_stat, timestamp)
-        self.recalculate_statistics(bridge_stat)
         
         bridge_stat["stats_last_updated"] = timestamp.isoformat()
         self.save_stats()
 
     def update_status(self, bridge_stat, status, action, timestamp):
-        # Close out any open raising_soon or lowering_soon periods
+        # Close out any open raising_soon periods
         if bridge_stat["raising_soon_times"] and "end" not in bridge_stat["raising_soon_times"][-1]:
             if action != "Raising Soon":
                 bridge_stat["raising_soon_times"][-1]["end"] = timestamp.isoformat()
                 self.update_raising_soon_stats(bridge_stat, bridge_stat["raising_soon_times"][-1])
-
-        if bridge_stat["lowering_soon_times"] and "end" not in bridge_stat["lowering_soon_times"][-1]:
-            if action != "Lowering Soon":
-                bridge_stat["lowering_soon_times"][-1]["end"] = timestamp.isoformat()
-                self.update_lowering_soon_stats(bridge_stat, bridge_stat["lowering_soon_times"][-1])
 
         if status != bridge_stat["last_status"] or action != bridge_stat.get("last_action"):
             if status == "Unavailable" and bridge_stat["last_status"] == "Available":
@@ -76,8 +68,6 @@ class BridgeStats:
             
             if action == "Raising Soon":
                 bridge_stat["raising_soon_times"].append({"start": timestamp.isoformat()})
-            elif action == "Lowering Soon":
-                bridge_stat["lowering_soon_times"].append({"start": timestamp.isoformat()})
             
             bridge_stat["last_status"] = status
             bridge_stat["last_action"] = action
@@ -118,28 +108,11 @@ class BridgeStats:
             total_duration = bridge_stat["avg_raising_soon_to_unavailable"] * (len(bridge_stat["raising_soon_times"]) - 1) + duration
             bridge_stat["avg_raising_soon_to_unavailable"] = round(total_duration / len(bridge_stat["raising_soon_times"]))
 
-    def update_lowering_soon_stats(self, bridge_stat, lowering_soon_time):
-        duration = round((datetime.fromisoformat(lowering_soon_time["end"]) - datetime.fromisoformat(lowering_soon_time["start"])).total_seconds() / 60)
-        if len(bridge_stat["lowering_soon_times"]) == 1:
-            bridge_stat["avg_lowering_soon_to_available"] = duration
-        else:
-            total_duration = bridge_stat["avg_lowering_soon_to_available"] * (len(bridge_stat["lowering_soon_times"]) - 1) + duration
-            bridge_stat["avg_lowering_soon_to_available"] = round(total_duration / len(bridge_stat["lowering_soon_times"]))
-
     def cleanup_old_data(self, bridge_stat, current_timestamp):
         sixty_days_ago = current_timestamp - timedelta(days=60)
         bridge_stat["closures"] = [closure for closure in bridge_stat["closures"]
                                    if datetime.fromisoformat(closure["start"]) > sixty_days_ago]
         bridge_stat["raising_soon_times"] = [time for time in bridge_stat["raising_soon_times"]
                                              if datetime.fromisoformat(time["start"]) > sixty_days_ago]
-        bridge_stat["lowering_soon_times"] = [time for time in bridge_stat["lowering_soon_times"]
-                                              if datetime.fromisoformat(time["start"]) > sixty_days_ago]
-
-    def recalculate_statistics(self, bridge_stat):
-        if len(bridge_stat["closures"]) > 1:
-            total_time_between = sum((datetime.fromisoformat(bridge_stat["closures"][i+1]["start"]) - 
-                                      datetime.fromisoformat(bridge_stat["closures"][i]["end"])).total_seconds() / 60
-                                     for i in range(len(bridge_stat["closures"]) - 1))
-            bridge_stat["avg_time_between_closures"] = round(total_time_between / (len(bridge_stat["closures"]) - 1))
 
 bridge_stats = BridgeStats()
