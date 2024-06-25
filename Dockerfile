@@ -19,6 +19,9 @@ RUN apt-get update && \
 # Copy the rest of the application
 COPY . .
 
+# Delete the bridge_stats.json file if it exists to reset the data
+RUN rm -f /app/bridge_stats.json
+
 # Set environment variables
 ENV BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
 ENV FETCH_INTERVAL=30
