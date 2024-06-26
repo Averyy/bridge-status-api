@@ -109,7 +109,7 @@ class BridgeStats:
             bridge_stat["avg_raising_soon_to_unavailable"] = round(total_duration / len(bridge_stat["raising_soon_times"]))
 
     def cleanup_old_data(self, bridge_stat, current_timestamp):
-        sixty_days_ago = current_timestamp - timedelta(days=60)
+        sixty_days_ago = current_timestamp - timedelta(days=180)
         bridge_stat["closures"] = [closure for closure in bridge_stat["closures"]
                                    if datetime.fromisoformat(closure["start"]) > sixty_days_ago]
         bridge_stat["raising_soon_times"] = [time for time in bridge_stat["raising_soon_times"]

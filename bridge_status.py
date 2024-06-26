@@ -23,45 +23,48 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
     if current_status == "Available":
         if action_status == "Raising Soon":
             display_status = "OPEN NOW"
-            icon = "checkmark.circle.trianglebadge.exclamationmark"
+            icon = "checkmarkWarning"
             avg_raising_time = bridge_stat.get("avg_raising_soon_to_unavailable", 0)
             if avg_raising_time:
                 time_since_change = (current_time - last_status_change).total_seconds() / 60
-                remaining_time = max(1, int(avg_raising_time - time_since_change))
-                display_details = f"Closing in {remaining_time}m"
+                remaining_time = int(avg_raising_time - time_since_change)
+                if remaining_time > 0:
+                    display_details = f"Closing in {remaining_time}m (avg)"
+                else:
+                    display_details = "Closing soon (longer than avg)"
             else:
                 display_details = "Closing soon"
         else:
             display_status = "OPEN NOW"
-            icon = "checkmark.circle"
+            icon = "checkmark"
             display_details = f"Opened {format_time(last_status_change)}"
     elif current_status == "Unavailable":
         if action_status == "Raising":
             display_status = "CLOSING..."
-            icon = "exclamationmark.triangle"
+            icon = "warning"
             display_details = f"Closed {format_time(last_status_change)}"
         elif action_status == "Lowering":
             display_status = "OPENING..."
-            icon = "clock.arrow.trianglehead.counterclockwise.rotate.90"
+            icon = "clock"
             display_details = "Opening right now..."
         elif action_status and "Fully Raised since" in action_status:
             display_status = "CLOSED NOW"
-            icon = "exclamationmark.triangle"
+            icon = "warning"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
             fully_raised_time = datetime.strptime(action_status.split("since")[-1].strip(), "%H:%M").replace(year=current_time.year, month=current_time.month, day=current_time.day)
             display_details = f"Closed {format_time(closure_start)}, fully raised since {format_time(fully_raised_time)}"
         else:
             display_status = "CLOSED NOW"
-            icon = "exclamationmark.triangle"
+            icon = "warning"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
             avg_closure_time = bridge_stat.get("avg_closure_duration", 0)
             if avg_closure_time:
                 estimated_open_time = closure_start + timedelta(minutes=avg_closure_time)
-                remaining_time = max(1, int(avg_closure_time - (current_time - closure_start).total_seconds() / 60))
+                remaining_time = int(avg_closure_time - (current_time - closure_start).total_seconds() / 60)
                 if remaining_time > 1:
-                    display_details = f"Closed {format_time(closure_start)}, opens {format_time(estimated_open_time)} in {remaining_time}m"
+                    display_details = f"Closed {format_time(closure_start)}, opens {format_time(estimated_open_time)} in {remaining_time}m (avg)"
                 else:
-                    display_details = f"Closed {format_time(closure_start)}, opening soon"
+                    display_details = f"Closed {format_time(closure_start)} for longer than avg"
             else:
                 display_details = f"Closed {format_time(closure_start)}"
 
@@ -69,13 +72,13 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
         # Handle unknown or new statuses
         if "Available" in current_status:
             display_status = "OPEN NOW"
-            icon = "checkmark.circle"
+            icon = "checkmark"
         elif "Unavailable" in current_status:
             display_status = "CLOSED NOW"
-            icon = "exclamationmark.triangle"
+            icon = "warning"
         else:
             display_status = "UNKNOWN"
-            icon = "questionmark.diamond"
+            icon = "question"
         
         display_details = current_status
         if action_status:
