@@ -114,5 +114,18 @@ class BridgeStats:
                                    if datetime.fromisoformat(closure["start"]) > sixty_days_ago]
         bridge_stat["raising_soon_times"] = [time for time in bridge_stat["raising_soon_times"]
                                              if datetime.fromisoformat(time["start"]) > sixty_days_ago]
-
+    # Output for API splitting the stats
+    
+    def get_filtered_stats(self):
+        return [
+            {k: v for k, v in stat.items() if k not in ['raising_soon_times', 'closures']}
+            for stat in self.stats.get('bridge_statistics', [])
+        ]
+    
+    def get_filtered_history(self):
+        return [
+            {k: v for k, v in stat.items() if k in ['raising_soon_times', 'closures', 'id', 'location']}
+            for stat in self.stats.get('bridge_statistics', [])
+        ]
+    
 bridge_stats = BridgeStats()

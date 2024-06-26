@@ -23,6 +23,7 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
     if current_status == "Available":
         if action_status == "Raising Soon":
             display_status = "OPEN NOW"
+            icon = "checkmark.circle.trianglebadge.exclamationmark"
             avg_raising_time = bridge_stat.get("avg_raising_soon_to_unavailable", 0)
             if avg_raising_time:
                 time_since_change = (current_time - last_status_change).total_seconds() / 60
@@ -32,21 +33,26 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
                 display_details = "Closing soon"
         else:
             display_status = "OPEN NOW"
+            icon = "checkmark.circle"
             display_details = f"Opened {format_time(last_status_change)}"
     elif current_status == "Unavailable":
         if action_status == "Raising":
             display_status = "CLOSING..."
+            icon = "exclamationmark.triangle"
             display_details = f"Closed {format_time(last_status_change)}"
         elif action_status == "Lowering":
             display_status = "OPENING..."
+            icon = "clock.arrow.trianglehead.counterclockwise.rotate.90"
             display_details = "Opening right now..."
         elif action_status and "Fully Raised since" in action_status:
             display_status = "CLOSED NOW"
+            icon = "exclamationmark.triangle"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
             fully_raised_time = datetime.strptime(action_status.split("since")[-1].strip(), "%H:%M").replace(year=current_time.year, month=current_time.month, day=current_time.day)
             display_details = f"Closed {format_time(closure_start)}, fully raised since {format_time(fully_raised_time)}"
         else:
             display_status = "CLOSED NOW"
+            icon = "exclamationmark.triangle"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
             avg_closure_time = bridge_stat.get("avg_closure_duration", 0)
             if avg_closure_time:
@@ -63,16 +69,19 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
         # Handle unknown or new statuses
         if "Available" in current_status:
             display_status = "OPEN NOW"
+            icon = "checkmark.circle"
         elif "Unavailable" in current_status:
             display_status = "CLOSED NOW"
+            icon = "exclamationmark.triangle"
         else:
             display_status = "UNKNOWN"
+            icon = "questionmark.diamond"
         
         display_details = current_status
         if action_status:
             display_details += f" ({action_status})"
 
-    return display_status, display_details
+    return display_status, display_details, icon
 
 def fetch_bridge_status():
     global bridge_status
@@ -101,13 +110,14 @@ def fetch_bridge_status():
                 
                 bridge_stats.update_bridge_stat(idx, bridge_name, current_status, action_status, last_updated)
                 
-                display_status, display_details = format_display_data(current_status, action_status, last_updated, bridge_data)
+                display_status, display_details, icon = format_display_data(current_status, action_status, last_updated, bridge_data)
                 
                 bridge_data_entry = {
                     'id': idx,
                     'location': bridge_name,
                     'state': display_status,
-                    'info': display_details
+                    'info': display_details,
+                    'icon': icon
                 }
                 updated_status.append(bridge_data_entry)
             except Exception as e:

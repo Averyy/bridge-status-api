@@ -18,10 +18,15 @@ app = Flask(__name__)
 def get_bridge_status():
     return jsonify(get_current_bridge_status())
 
-@app.route('/bridge-stats', methods=['GET'])
+@app.route('/stats', methods=['GET'])
 @require_api_key
 def get_bridge_statistics():
-    return jsonify(bridge_stats.stats)
+    return jsonify(bridge_stats.get_filtered_stats())
+
+@app.route('/history', methods=['GET'])
+@require_api_key
+def get_bridge_history():
+    return jsonify(bridge_stats.get_filtered_history())
 
 @app.route('/health', methods=['GET'])
 def health_check():
