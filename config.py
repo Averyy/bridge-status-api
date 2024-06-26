@@ -12,5 +12,8 @@ FETCH_INTERVAL = int(os.getenv('FETCH_INTERVAL', 30))
 # API key for authentication
 API_KEY = os.getenv('API_KEY', 'your_secret_api_key_here')
 
-# Local timezone (Toronto time)
+# Local timezone (Toronto time) used in utils.py
 TORONTO_TZ = pytz.timezone('America/Toronto')
+
+# History storage. If unset use root dir
+BRIDGE_STATS_FILE = os.getenv('BRIDGE_STATS_FILE', 'bridge_stats.json')

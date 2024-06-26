@@ -1,10 +1,12 @@
 # bridge_stats.py
 
 import json
+import os
 from datetime import datetime, timedelta
+from config import BRIDGE_STATS_FILE
 
 class BridgeStats:
-    def __init__(self, filename='bridge_stats.json'):
+    def __init__(self, filename=BRIDGE_STATS_FILE):
         self.filename = filename
         self.stats = self.load_stats()
 
@@ -16,6 +18,9 @@ class BridgeStats:
             return {"bridge_statistics": []}
 
     def save_stats(self):
+        directory = os.path.dirname(self.filename)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         with open(self.filename, 'w') as f:
             json.dump(self.stats, f, indent=2)
 

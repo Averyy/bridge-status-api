@@ -63,6 +63,7 @@ Create a `.env` file in the project root and add the below. Note these are defau
 BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
 FETCH_INTERVAL=30
 API_KEY=your_secret_api_key_here
+BRIDGE_STATS_FILE=/app/data/bridge_stats.json
 ```
 
 ### 5. Run the application
@@ -95,10 +96,24 @@ You can either build the Docker image yourself below, or download it from Docker
 docker build -t bridge-status-api .
 ```
 
-### 2. Run the Docker container
+### 2. Run the Docker container (no history persistence)
 
 ```sh
 docker run -d -p 5000:5000 --env-file .env bridge-status-api
+```
+
+#### For persistent closure history storage:
+
+Docker managed:
+
+```sh
+docker run -d -p 5000:5000 --env-file .env -v bridge_stats:/app/data bridge-status-api
+```
+
+Or custom path example:
+
+```sh
+docker run -d -p 5000:5000 --env-file .env -v /path/on/your/host:/app/data bridge-status-api
 ```
 
 ## API Endpoints

@@ -19,13 +19,14 @@ RUN apt-get update && \
 # Copy the rest of the application
 COPY . .
 
-# Delete the bridge_stats.json file if it exists to reset the data
-RUN rm -f /app/bridge_stats.json
+# Create directory for persistent data
+RUN mkdir -p /app/data
 
 # Set environment variables
 ENV BRIDGE_STATUS_URL=https://seaway-greatlakes.com/bridgestatus/detailsnai?key=BridgeSCT
 ENV FETCH_INTERVAL=30
 ENV API_KEY=your_secret_api_key_here
+ENV BRIDGE_STATS_FILE=/app/data/bridge_stats.json
 
 # Expose port 5000
 EXPOSE 5000

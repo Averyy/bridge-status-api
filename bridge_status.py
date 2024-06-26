@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 from datetime import datetime, timedelta
-from config import URL, TORONTO_TZ
+from config import URL
 from bridge_stats import bridge_stats
 from utils import parse_status, get_current_time
 
