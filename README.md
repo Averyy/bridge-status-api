@@ -105,6 +105,8 @@ docker run -d -p 5000:5000 --env-file .env bridge-status-api
 
 ### Get Bridge Status
 
+General bridge information to provide the most up to date info
+
 ```http
 GET /bridge-status
 ```
@@ -122,7 +124,8 @@ Response:
             "id": 1,
             "info": "Opened 7:24pm",
             "location": "Lakeshore Rd",
-            "state": "OPEN NOW"
+            "state": "OPEN NOW",
+            "icon": "checkmark.circle"
         },
         ...
     ],
@@ -132,8 +135,10 @@ Response:
 
 ### Get Bridge Statistics
 
+Stats used to display bridge details.
+
 ```http
-GET /bridge-stats
+GET /stats
 ```
 
 Headers:
@@ -144,7 +149,7 @@ Response:
 
 ```json
 {
-    "bridge_statistics_": [
+    "bridge_statistics": [
         {
             "avg_closure_duration": 0,
             "avg_lowering_soon_to_available": 0,
@@ -166,6 +171,34 @@ Response:
             "longest_closure": 0,
             "shortest_closure": 0,
             "stats_last_updated": "2024-06-24T19:49:26.234387-04:00"
+        },
+        ...
+    ]
+}
+```
+
+### Get Bridge History
+
+History of closures and raising_soon_times used for the above calculations
+
+```http
+GET /stats
+```
+
+Headers:
+
+-   `X-API-Key`: Your API key
+
+Response:
+
+```json
+{
+    "bridge_statistics": [
+        {
+            "id": 1,
+            "location": "Lakeshore Rd",
+            "raising_soon_times": [],
+            "closures": []
         },
         ...
     ]
