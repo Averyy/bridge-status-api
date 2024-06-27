@@ -9,6 +9,9 @@ class BridgeStats:
     def __init__(self, filename=BRIDGE_STATS_FILE):
         self.filename = filename
         self.stats = self.load_stats()
+        for bridge_stat in self.stats["bridge_statistics"]:
+            self.recalculate_all_stats(bridge_stat)
+        self.save_stats()
 
     def load_stats(self):
         try:
@@ -113,10 +116,52 @@ class BridgeStats:
             total_duration = bridge_stat["avg_raising_soon_to_unavailable"] * (len(bridge_stat["raising_soon_times"]) - 1) + duration
             bridge_stat["avg_raising_soon_to_unavailable"] = round(total_duration / len(bridge_stat["raising_soon_times"]))
 
-    # Remove data thats old and durations that are longer than 1 hour (not helpful in calc averages since they are outliers)
+    # calc the stats from scratch, called on app start or when an outlier is deleted because data history changed
+    def recalculate_all_stats(self, bridge_stat):
+        closures = bridge_stat["closures"]
+        raising_soon_times = bridge_stat["raising_soon_times"]
+
+        # Reset stats
+        bridge_stat["shortest_closure"] = 0
+        bridge_stat["longest_closure"] = 0
+        bridge_stat["avg_closure_duration"] = 0
+        bridge_stat["avg_raising_soon_to_unavailable"] = 0
+        bridge_stat["closure_durations"] = {"1-9m": 0, "10-15m": 0, "16-20m": 0, "21-25m": 0, "26-30m": 0, "31m+": 0}
+
+       # Recalculate closure stats
+        if closures:
+            durations = [(datetime.fromisoformat(c["end"]) - datetime.fromisoformat(c["start"])).total_seconds() / 60 
+                         for c in closures if "end" in c]
+            bridge_stat["avg_closure_duration"] = round(sum(durations) / len(durations))
+            bridge_stat["shortest_closure"] = round(min(durations))
+            bridge_stat["longest_closure"] = round(max(durations))
+
+            for duration in durations:
+                if duration <= 9:
+                    bridge_stat["closure_durations"]["1-9m"] += 1
+                elif duration <= 15:
+                    bridge_stat["closure_durations"]["10-15m"] += 1
+                elif duration <= 20:
+                    bridge_stat["closure_durations"]["16-20m"] += 1
+                elif duration <= 25:
+                    bridge_stat["closure_durations"]["21-25m"] += 1
+                elif duration <= 30:
+                    bridge_stat["closure_durations"]["26-30m"] += 1
+                else:
+                    bridge_stat["closure_durations"]["31m+"] += 1
+
+        # Recalculate raising_soon stats
+        if raising_soon_times:
+            durations = [(datetime.fromisoformat(r["end"]) - datetime.fromisoformat(r["start"])).total_seconds() / 60 
+                         for r in raising_soon_times if "end" in r]
+            bridge_stat["avg_raising_soon_to_unavailable"] = round(sum(durations) / len(durations))
+
+    # Remove data thats older than 180 days and durations that are longer than 1.5 hours since they are outliers, and recalculate all stats from scratch if something is deleted
     def cleanup_data(self, bridge_stat, current_timestamp):
         sixty_days_ago = current_timestamp - timedelta(days=180)
         max_duration = timedelta(hours=1, minutes=30)
+
+        original_length = len(bridge_stat["closures"]) + len(bridge_stat["raising_soon_times"])
 
         bridge_stat["closures"] = [
             closure for closure in bridge_stat["closures"]
@@ -131,6 +176,11 @@ class BridgeStats:
             and ("end" not in time or 
                  datetime.fromisoformat(time["end"]) - datetime.fromisoformat(time["start"]) <= max_duration)
         ]
+
+        new_length = len(bridge_stat["closures"]) + len(bridge_stat["raising_soon_times"])
+
+        if new_length < original_length:
+            self.recalculate_all_stats(bridge_stat)
 
     # Output for API splitting the stats
     def get_filtered_stats(self):
