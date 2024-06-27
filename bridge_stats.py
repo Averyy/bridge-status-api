@@ -51,7 +51,7 @@ class BridgeStats:
             self.stats["bridge_statistics"].append(bridge_stat)
         
         self.update_status(bridge_stat, status, action, timestamp)
-        self.cleanup_old_data(bridge_stat, timestamp)
+        self.cleanup_data(bridge_stat, timestamp)
         
         bridge_stat["stats_last_updated"] = timestamp.isoformat()
         self.save_stats()
@@ -113,14 +113,26 @@ class BridgeStats:
             total_duration = bridge_stat["avg_raising_soon_to_unavailable"] * (len(bridge_stat["raising_soon_times"]) - 1) + duration
             bridge_stat["avg_raising_soon_to_unavailable"] = round(total_duration / len(bridge_stat["raising_soon_times"]))
 
-    def cleanup_old_data(self, bridge_stat, current_timestamp):
+    # Remove data thats old and durations that are longer than 1 hour (not helpful in calc averages since they are outliers)
+    def cleanup_data(self, bridge_stat, current_timestamp):
         sixty_days_ago = current_timestamp - timedelta(days=180)
-        bridge_stat["closures"] = [closure for closure in bridge_stat["closures"]
-                                   if datetime.fromisoformat(closure["start"]) > sixty_days_ago]
-        bridge_stat["raising_soon_times"] = [time for time in bridge_stat["raising_soon_times"]
-                                             if datetime.fromisoformat(time["start"]) > sixty_days_ago]
+        max_duration = timedelta(hours=1, minutes=30)
+
+        bridge_stat["closures"] = [
+            closure for closure in bridge_stat["closures"]
+            if datetime.fromisoformat(closure["start"]) > sixty_days_ago
+            and ("end" not in closure or 
+                 datetime.fromisoformat(closure["end"]) - datetime.fromisoformat(closure["start"]) <= max_duration)
+        ]
+
+        bridge_stat["raising_soon_times"] = [
+            time for time in bridge_stat["raising_soon_times"]
+            if datetime.fromisoformat(time["start"]) > sixty_days_ago
+            and ("end" not in time or 
+                 datetime.fromisoformat(time["end"]) - datetime.fromisoformat(time["start"]) <= max_duration)
+        ]
+
     # Output for API splitting the stats
-    
     def get_filtered_stats(self):
         return [
             {k: v for k, v in stat.items() if k not in ['raising_soon_times', 'closures']}

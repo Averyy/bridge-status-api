@@ -166,26 +166,24 @@ Response:
 {
     "bridge_statistics": [
         {
-            "avg_closure_duration": 0,
-            "avg_lowering_soon_to_available": 0,
-            "avg_raising_soon_to_unavailable": 0,
-            "avg_time_between_closures": 0,
-            "closure_durations": {
-                "1-9m": 0,
-                "10-15m": 0,
-                "16-20m": 0,
-                "21-25m": 0,
-                "26-30m": 0,
-                "31m+": 0
-            },
             "id": 1,
-            "last_action": null,
-            "last_status": "Available",
-            "last_status_change": "2024-06-24T19:24:18.758574-04:00",
             "location": "Lakeshore Rd",
-            "longest_closure": 0,
-            "shortest_closure": 0,
-            "stats_last_updated": "2024-06-24T19:49:26.234387-04:00"
+            "last_status": "Available",
+            "avg_closure_duration": 22,
+            "avg_raising_soon_to_unavailable": 30,
+            "longest_closure": 43,
+            "shortest_closure": 8,
+            "closure_durations": {
+                "1-9m": 1,
+                "10-15m": 2,
+                "16-20m": 0,
+                "21-25m": 2,
+                "26-30m": 1,
+                "31m+": 1
+            },
+            "last_action": null,
+            "last_status_change": "2024-06-26T19:12:54.633893-04:00",
+            "stats_last_updated": "2024-06-26T19:32:39.165313-04:00"
         },
         ...
     ]
@@ -197,7 +195,7 @@ Response:
 History of closures and raising_soon_times used for the above calculations
 
 ```http
-GET /stats
+GET /history
 ```
 
 Headers:
@@ -209,12 +207,30 @@ Response:
 ```json
 {
     "bridge_statistics": [
-        {
-            "id": 1,
-            "location": "Lakeshore Rd",
-            "raising_soon_times": [],
-            "closures": []
-        },
+    {
+        "id": 1,
+        "location": "Lakeshore Rd",
+        "raising_soon_times": [
+            {
+                "end": "2024-06-25T21:14:16.679841-04:00",
+                "start": "2024-06-25T20:43:16.685525-04:00"
+            },
+            {
+                "end": "2024-06-25T23:14:46.702959-04:00",
+                "start": "2024-06-25T22:45:46.679170-04:00"
+            }
+        ],
+        "closures": [
+            {
+                "end": "2024-06-25T21:56:46.692680-04:00",
+                "start": "2024-06-25T21:14:16.679841-04:00"
+            },
+            {
+                "end": "2024-06-26T01:26:46.665830-04:00",
+                "start": "2024-06-26T01:14:46.689335-04:00"
+            }
+        ]
+    },
         ...
     ]
 }
