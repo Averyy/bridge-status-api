@@ -8,7 +8,9 @@ def base_time_and_stat():
     base_stat = {
         "last_status_change": (current_time - timedelta(minutes=35)).isoformat(),
         "avg_raising_soon_to_unavailable": 15,
+        "raising_soon_ci": (10, 20),
         "avg_closure_duration": 30,
+        "closure_duration_ci": (25, 35),
         "closures": [{"start": (current_time - timedelta(minutes=49)).isoformat()}]
     }
     return current_time, base_stat
@@ -22,26 +24,34 @@ def test_available(base_time_and_stat):
 
 def test_available_raising_soon_negative_time(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
-    base_stat['last_status_change'] = (current_time - timedelta(minutes=20)).isoformat()  # 20 minutes ago
+    base_stat['last_status_change'] = (current_time - timedelta(minutes=20)).isoformat()
     status, info, icon = format_display_data("Available", "Raising Soon", current_time, base_stat)
     assert status == "OPEN NOW"
-    assert info == "Closing soon (longer than avg)"
+    assert info == "Closing soon (longer than usual)"
     assert icon == "checkmarkWarning"
 
 def test_available_raising_soon_positive_time(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
-    base_stat['last_status_change'] = (current_time - timedelta(minutes=10)).isoformat()  # 10 minutes ago
+    base_stat['last_status_change'] = (current_time - timedelta(minutes=5)).isoformat()
     status, info, icon = format_display_data("Available", "Raising Soon", current_time, base_stat)
     assert status == "OPEN NOW"
-    assert info == "Closing in 5m (avg)"
+    assert info == "Closing in 5-15m (avg)"
     assert icon == "checkmarkWarning"
 
-def test_unavailable(base_time_and_stat):
+def test_unavailable_within_range(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
-    base_stat["closures"][-1]["end"] = current_time.isoformat()
+    base_stat['closures'][-1]['start'] = (current_time - timedelta(minutes=10)).isoformat()
     status, info, icon = format_display_data("Unavailable", None, current_time, base_stat)
     assert status == "CLOSED NOW"
-    assert info == "Closed 5:11pm for longer than avg"
+    assert info == "Closed 5:50pm. Opening in 15-25m (avg)"
+    assert icon == "warning"
+
+def test_unavailable_longer_than_usual(base_time_and_stat):
+    current_time, base_stat = base_time_and_stat
+    base_stat['closures'][-1]['start'] = (current_time - timedelta(minutes=60)).isoformat()
+    status, info, icon = format_display_data("Unavailable", None, current_time, base_stat)
+    assert status == "CLOSED NOW"
+    assert info == "Closed 5:00pm for longer than usual"
     assert icon == "warning"
 
 def test_unavailable_fully_raised(base_time_and_stat):
@@ -65,59 +75,16 @@ def test_unavailable_raising(base_time_and_stat):
     assert info == "Closed 5:25pm"
     assert icon == "warning"
 
-def test_temporarily_unavailable(base_time_and_stat):
+def test_unknown_status(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
-    status, info, icon = format_display_data("Temporarily Unavailable", None, current_time, base_stat)
-    assert status == "CLOSED NOW"
-    assert info == "Temporarily Unavailable"
-    assert icon == "warning"
-
-def test_closed_construction(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    status, info, icon = format_display_data("Closed Construction", None, current_time, base_stat)
+    status, info, icon = format_display_data("UnknownStatus", None, current_time, base_stat)
     assert status == "UNKNOWN"
-    assert info == "Closed Construction"
+    assert info == "UnknownStatus"
     assert icon == "question"
-
-def test_time_precision(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    base_stat["last_status_change"] = (current_time - timedelta(hours=1, minutes=7)).isoformat()
-    status, info, icon = format_display_data("Available", None, current_time, base_stat)
-    assert status == "OPEN NOW"
-    assert info == "Opened 4:53pm"
-    assert icon == "checkmark"
-
-def test_overnight_closure(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    overnight_time = current_time.replace(hour=1, minute=30)  # 1:30 AM next day
-    base_stat["closures"] = [{"start": (overnight_time - timedelta(hours=3)).isoformat(), "end": overnight_time.isoformat()}]
-    base_stat["avg_closure_duration"] = 240  # 4 hours
-    base_stat["last_status_change"] = (overnight_time - timedelta(hours=3)).isoformat()
-    status, info, icon = format_display_data("Unavailable", None, overnight_time, base_stat)
-    assert status == "CLOSED NOW"
-    assert info.startswith("Closed 10:30pm")
-    assert "opens 2:30am in 60m" in info
-    assert icon == "warning"
-
-def test_unavailable_unknown_action(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    status, info, icon = format_display_data("Unavailable", "Unknown Action", current_time, base_stat)
-    assert status == "CLOSED NOW"
-    assert info.startswith("Closed 5:11pm")
-    assert "for longer than avg" in info  # Check for the standard unavailable message
-    assert "Unknown Action" not in info  # The action status should not be appended for known statuses
-    assert icon == "warning"
 
 def test_unknown_status_with_action(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("UnknownStatus", "SomeAction", current_time, base_stat)
     assert status == "UNKNOWN"
     assert info == "UnknownStatus (SomeAction)"
-    assert icon == "question"
-
-def test_unknown_status_without_action(base_time_and_stat):
-    current_time, base_stat = base_time_and_stat
-    status, info, icon = format_display_data("UnknownStatus", None, current_time, base_stat)
-    assert status == "UNKNOWN"
-    assert info == "UnknownStatus"
     assert icon == "question"

@@ -2,6 +2,8 @@
 
 import json
 import os
+import math
+from scipy import stats
 from datetime import datetime, timedelta
 from config import BRIDGE_STATS_FILE
 
@@ -116,6 +118,15 @@ class BridgeStats:
             total_duration = bridge_stat["avg_raising_soon_to_unavailable"] * (len(bridge_stat["raising_soon_times"]) - 1) + duration
             bridge_stat["avg_raising_soon_to_unavailable"] = round(total_duration / len(bridge_stat["raising_soon_times"]))
 
+    def calculate_ci(self, data, confidence=0.95):
+        if not data:
+            return 0, 0
+        data = [d for d in data if d is not None]
+        mean = sum(data) / len(data)
+        std_err = stats.sem(data)
+        ci = stats.t.interval(confidence, len(data)-1, loc=mean, scale=std_err)
+        return round(ci[0]), round(ci[1])
+
     # calc the stats from scratch, called on app start or when an outlier is deleted because data history changed
     def recalculate_all_stats(self, bridge_stat):
         closures = bridge_stat["closures"]
@@ -133,6 +144,7 @@ class BridgeStats:
             durations = [(datetime.fromisoformat(c["end"]) - datetime.fromisoformat(c["start"])).total_seconds() / 60 
                          for c in closures if "end" in c]
             bridge_stat["avg_closure_duration"] = round(sum(durations) / len(durations))
+            bridge_stat["closure_duration_ci"] = self.calculate_ci(durations)
             bridge_stat["shortest_closure"] = round(min(durations))
             bridge_stat["longest_closure"] = round(max(durations))
 
@@ -155,6 +167,7 @@ class BridgeStats:
             durations = [(datetime.fromisoformat(r["end"]) - datetime.fromisoformat(r["start"])).total_seconds() / 60 
                          for r in raising_soon_times if "end" in r]
             bridge_stat["avg_raising_soon_to_unavailable"] = round(sum(durations) / len(durations))
+            bridge_stat["raising_soon_ci"] = self.calculate_ci(durations)
 
     # Remove data thats older than 180 days and durations that are longer than 1.5 hours since they are outliers, and recalculate all stats from scratch if something is deleted
     def cleanup_data(self, bridge_stat, current_timestamp):

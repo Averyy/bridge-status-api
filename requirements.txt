@@ -5,3 +5,4 @@ apscheduler
 pytest
 python-dotenv
 waitress
+scipy

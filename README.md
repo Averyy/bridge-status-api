@@ -96,15 +96,17 @@ You can either build the Docker image yourself below, or download it from Docker
 docker build -t bridge-status-api .
 ```
 
-### 2. Run the Docker container (no history persistence)
+### 2. Run the Docker container
+
+No persisted history (clears when Docker updates)
 
 ```sh
 docker run -d -p 5000:5000 --env-file .env bridge-status-api
 ```
 
-#### For persistent closure history storage:
+#### For (better) persistent history storage:
 
-Docker managed:
+Docker managed history:
 
 ```sh
 docker run -d -p 5000:5000 --env-file .env -v bridge_stats:/app/data bridge-status-api

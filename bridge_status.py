@@ -25,13 +25,15 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
             display_status = "OPEN NOW"
             icon = "checkmarkWarning"
             avg_raising_time = bridge_stat.get("avg_raising_soon_to_unavailable", 0)
+            raising_soon_ci = bridge_stat.get("raising_soon_ci", (0, 0))
             if avg_raising_time:
                 time_since_change = (current_time - last_status_change).total_seconds() / 60
-                remaining_time = int(avg_raising_time - time_since_change)
-                if remaining_time > 0:
-                    display_details = f"Closing in {remaining_time}m (avg)"
+                lower_remaining = max(0, int(raising_soon_ci[0] - time_since_change))
+                upper_remaining = max(0, int(raising_soon_ci[1] - time_since_change))
+                if upper_remaining > 1:
+                    display_details = f"Closing in {lower_remaining}-{upper_remaining}m (avg)"
                 else:
-                    display_details = "Closing soon (longer than avg)"
+                    display_details = "Closing soon (longer than usual)"
             else:
                 display_details = "Closing soon"
         else:
@@ -58,13 +60,15 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
             icon = "warning"
             closure_start = datetime.fromisoformat(bridge_stat["closures"][-1]["start"]) if bridge_stat["closures"] else last_status_change
             avg_closure_time = bridge_stat.get("avg_closure_duration", 0)
+            closure_duration_ci = bridge_stat.get("closure_duration_ci", (0, 0))
             if avg_closure_time:
-                estimated_open_time = closure_start + timedelta(minutes=avg_closure_time)
-                remaining_time = int(avg_closure_time - (current_time - closure_start).total_seconds() / 60)
-                if remaining_time > 1:
-                    display_details = f"Closed {format_time(closure_start)}, opens {format_time(estimated_open_time)} in {remaining_time}m (avg)"
+                time_closed = (current_time - closure_start).total_seconds() / 60
+                lower_remaining = max(0, int(closure_duration_ci[0] - time_closed))
+                upper_remaining = max(0, int(closure_duration_ci[1] - time_closed))
+                if upper_remaining > 1:
+                    display_details = f"Closed {format_time(closure_start)}. Opening in {lower_remaining}-{upper_remaining}m (avg)"
                 else:
-                    display_details = f"Closed {format_time(closure_start)} for longer than avg"
+                    display_details = f"Closed {format_time(closure_start)} for longer than usual"
             else:
                 display_details = f"Closed {format_time(closure_start)}"
 
