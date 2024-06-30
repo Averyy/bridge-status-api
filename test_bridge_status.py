@@ -18,7 +18,7 @@ def base_time_and_stat():
 def test_available(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("Available", None, current_time, base_stat)
-    assert status == "OPEN NOW"
+    assert status == "OPEN"
     assert info == "Opened 5:25pm"
     assert icon == "checkmark"
 
@@ -26,7 +26,7 @@ def test_available_raising_soon_negative_time(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     base_stat['last_status_change'] = (current_time - timedelta(minutes=20)).isoformat()
     status, info, icon = format_display_data("Available", "Raising Soon", current_time, base_stat)
-    assert status == "OPEN NOW"
+    assert status == "OPEN"
     assert info == "Closing soon (longer than usual)"
     assert icon == "checkmarkWarning"
 
@@ -34,44 +34,44 @@ def test_available_raising_soon_positive_time(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     base_stat['last_status_change'] = (current_time - timedelta(minutes=5)).isoformat()
     status, info, icon = format_display_data("Available", "Raising Soon", current_time, base_stat)
-    assert status == "OPEN NOW"
-    assert info == "Closing in 5-15m (avg)"
+    assert status == "OPEN"
+    assert info == "Closing soon in 5-15m (avg)"
     assert icon == "checkmarkWarning"
 
 def test_unavailable_within_range(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     base_stat['closures'][-1]['start'] = (current_time - timedelta(minutes=10)).isoformat()
     status, info, icon = format_display_data("Unavailable", None, current_time, base_stat)
-    assert status == "CLOSED NOW"
-    assert info == "Closed 5:50pm. Opening in 15-25m (avg)"
+    assert status == "CLOSED"
+    assert info == "Closed 5:50pm. Open in 15-25m (avg)"
     assert icon == "warning"
 
 def test_unavailable_longer_than_usual(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     base_stat['closures'][-1]['start'] = (current_time - timedelta(minutes=60)).isoformat()
     status, info, icon = format_display_data("Unavailable", None, current_time, base_stat)
-    assert status == "CLOSED NOW"
+    assert status == "CLOSED"
     assert info == "Closed 5:00pm for longer than usual"
     assert icon == "warning"
 
 def test_unavailable_fully_raised(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("Unavailable", "Fully Raised since 17:15", current_time, base_stat)
-    assert status == "CLOSED NOW"
+    assert status == "CLOSED"
     assert info == "Closed 5:11pm, fully raised since 5:15pm"
     assert icon == "warning"
 
 def test_unavailable_lowering(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("Unavailable", "Lowering", current_time, base_stat)
-    assert status == "OPENING..."
+    assert status == "OPENING"
     assert info == "Opening right now..."
     assert icon == "clock"
 
 def test_unavailable_raising(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("Unavailable", "Raising", current_time, base_stat)
-    assert status == "CLOSING..."
+    assert status == "CLOSING"
     assert info == "Closed 5:25pm"
     assert icon == "warning"
 
