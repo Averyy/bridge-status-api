@@ -8,6 +8,14 @@ from config import URL
 from bridge_stats import bridge_stats
 from utils import parse_status, get_current_time
 
+BRIDGE_COORDINATES = {
+    "Lakeshore Rd": {"lat": 43.21617521494522, "lng": -79.21223177177772},
+    "Carlton St.": {"lat": 43.19185980424842, "lng": -79.20100809118367},
+    "Queenston St.": {"lat": 43.165824700918485, "lng": -79.19492604380804},
+    "Glendale Ave.": {"lat": 43.145269317159695, "lng": -79.19232941376643},
+    "Highway 20": {"lat": 43.076504078254914, "lng": -79.21046775066173}
+}
+
 logger = logging.getLogger(__name__)
 
 bridge_status = []
@@ -93,7 +101,7 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
 def fetch_bridge_status():
     global bridge_status
     try:
-        logger.info("Fetching bridge status")
+        #logger.info("Fetching bridge status")
         response = requests.get(URL)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -107,9 +115,9 @@ def fetch_bridge_status():
                 bridge_name = table.find('span', {'class': 'lgtextblack'}).text.strip()
                 status = table.find('span', {'id': 'status'}).text.strip()
                 
-                logger.info(f"Raw Bridge {idx}: {bridge_name}, status: {status}")
+                #logger.info(f"Raw Bridge {idx}: {bridge_name}, status: {status}")
                 current_status, action_status = parse_status(status)
-                logger.info(f"Parsed Bridge {idx}: {bridge_name}, current_status='{current_status}', action_status='{action_status}'")
+                #logger.info(f"Parsed Bridge {idx}: {bridge_name}, current_status='{current_status}', action_status='{action_status}'")
                 
                 bridge_data = bridge_stats.get_bridge_stat(idx)
                 if not bridge_data:
@@ -124,7 +132,9 @@ def fetch_bridge_status():
                     'location': bridge_name,
                     'state': display_status,
                     'info': display_details,
-                    'icon': icon
+                    'icon': icon,
+                    'lat': BRIDGE_COORDINATES.get(bridge_name, {}).get('lat'),
+                    'lng': BRIDGE_COORDINATES.get(bridge_name, {}).get('lng')
                 }
                 updated_status.append(bridge_data_entry)
             except Exception as e:
@@ -134,7 +144,7 @@ def fetch_bridge_status():
             'updated': last_updated.isoformat(),
             'bridges': updated_status
         }
-        logger.info("Updated bridge_status")
+        #logger.info("Updated bridge_status")
 
     except Exception as e:
         logger.error(f"Error fetching bridge status: {str(e)}", exc_info=True)
