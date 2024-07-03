@@ -57,6 +57,10 @@ def format_display_data(current_status, action_status, current_time, bridge_stat
             display_status = "OPENING"
             icon = "clock"
             display_details = "Opening right now..."
+        elif action_status == "Work in Progress":
+            display_status = "CLOSED"
+            icon = "construction"
+            display_details = f"Closed {format_time(last_status_change)} for construction"
         elif action_status and "Fully Raised since" in action_status:
             display_status = "CLOSED"
             icon = "warning"

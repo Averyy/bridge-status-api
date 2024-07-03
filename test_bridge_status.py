@@ -75,6 +75,13 @@ def test_unavailable_raising(base_time_and_stat):
     assert info == "Closed 5:25pm"
     assert icon == "warning"
 
+def test_unavailable_construction(base_time_and_stat):
+    current_time, base_stat = base_time_and_stat
+    status, info, icon = format_display_data("Unavailable", "Work in Progress", current_time, base_stat)
+    assert status == "CLOSED"
+    assert info == "Closed 5:25pm for construction"
+    assert icon == "construction"
+
 def test_unknown_status(base_time_and_stat):
     current_time, base_stat = base_time_and_stat
     status, info, icon = format_display_data("UnknownStatus", None, current_time, base_stat)

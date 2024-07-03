@@ -21,8 +21,11 @@ def parse_status(status):
     if match:
         current_status = match.group(1)
         action_status = match.group(2) if match.group(2) else None
-        if action_status and "since" in action_status:
-            action_status = action_status.split("since")[0].strip()
+        if action_status:
+            # Remove leading/trailing dashes and whitespace
+            action_status = re.sub(r'^-*\s*|\s*-*$', '', action_status)
+            if "since" in action_status:
+                action_status = action_status.split("since")[0].strip()
         return current_status, action_status
     return status, None
 
